@@ -86,7 +86,6 @@ public class HibernateLearnTest {
 		session.persist(newTask);
 
 		java.util.List<String> taskTitles = this.pullTaskTitles(session);
-		System.out.println(taskTitles);
 		Assert.assertEquals(7, taskTitles.size());
 		Assert.assertTrue(taskTitles.contains("new generated task 123"));
 	}
@@ -121,17 +120,20 @@ public class HibernateLearnTest {
 		Assert.assertNotEquals(newTitle, first.getTitle());
 		Assert.assertNotEquals(newDescription, first.getDescription());
 
+		session.evict(first);
+
 		first.setTitle(newTitle);
 		first.setDescription(newDescription);
-		session.evict(first);
+
 		session.update(first);
 		t.commit();
 
 		List<Task> updatedTasks = pullTasks(session);
-		Task firstUpdated = updatedTasks.get(0);
+		Task firstUpdated = updatedTasks.get(updatedTasks.size()-1);
 
 		Assert.assertEquals(newTitle, firstUpdated.getTitle());
 		Assert.assertEquals(newDescription, firstUpdated.getDescription());
+		Assert.assertEquals(0, firstUpdated.getId());
 	}
 
 	@After
