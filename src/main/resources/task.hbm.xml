@@ -1,0 +1,28 @@
+<hibernate-mapping>
+    <!-- class name is the fully qualified name of the POJO class -->
+    <!-- table is the name of the database table which represents the Student -->
+    <class name="edu.mikedev.hibernate_learning_test.Task" table="tasks">
+        <!-- Attribute id is mapped to the column student_id -->
+        <id name="id" type="integer">
+            <column name="id" />
+        </id>
+
+        <!-- Attribute name is mapped to the column student_name -->
+        <property name="title" type="string">
+            <column name="title" not-null="true" />
+        </property>
+
+		<property name="description" type="string">
+			<column name="description" not-null="true"/>
+		</property>
+
+		<property name="deadline" type="java.util.Date">
+			<column name="deadline" not-null="true"/>
+		</property>
+
+        <property name="done" type="boolean">
+            <column name="done" />
+        </property>
+
+    </class>
+</hibernate-mapping>

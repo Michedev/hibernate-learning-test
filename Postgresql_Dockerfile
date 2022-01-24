@@ -1,0 +1,7 @@
+FROM postgres:14.1-alpine
+
+COPY src/test/resources/sample_task.csv /db/fake-data/
+COPY src/test/resources/sample_user.csv /db/fake-data/
+COPY src/test/resources/test_db_init.sql /docker-entrypoint-initdb.d
+
+

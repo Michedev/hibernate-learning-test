@@ -1,0 +1,7 @@
+id,title,description,id_user,deadline,done
+0,Eat food,eat food for 15 days,0,03/04/2022,false
+1,Run a marathon,Run a full marathon for 42 kilometers,0,2024-10-16,false
+2,Sample task title 1,Sample task long description 1,1,2022-04-11,false
+3,Sample task title 2,Sample task long description 2,1,2022-04-10,false
+4,Sample task title 3,Sample task long description 3,2,2021-03-11,false 
+5,Sample task title 4,Sample task long description 4,3,2021-01-10,true

@@ -1,0 +1,99 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>edu.mikedev</groupId>
+  <artifactId>hibernate-learning-test</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>hibernate-learning-test</name>
+  <url>http://maven.apache.org</url>
+
+     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+	 </properties>
+
+  <dependencies>
+    <dependency>
+		      <groupId>junit</groupId>
+		      <artifactId>junit</artifactId>
+		      <version>4.13.2</version>
+		      <scope>test</scope>
+    </dependency>
+    <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.6.2.Final</version>
+     </dependency>
+     <dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.3.1</version>
+</dependency>
+  </dependencies>
+      <build>
+        <plugins>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.38.1</version>
+                <configuration>
+                    <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+                    <useColor>true</useColor>
+                    <images>
+                    	<image>
+                            <name>postgres:14.1-alpine</name>
+                            <alias>postgres</alias>
+                            <build>
+                       			<dockerFile>${project.basedir}/Postgresql_Dockerfile</dockerFile>     
+                            </build>
+                            <run>
+                                <autoRemove>true</autoRemove>
+                                <network>
+                                    <name>my-network</name>
+                                    <mode>custom</mode>
+                                </network>
+                                <env>
+                                    <POSTGRES_USER>root</POSTGRES_USER>
+                                    <POSTGRES_PASSWORD>root</POSTGRES_PASSWORD>
+                                </env>
+                                <ports>
+                                    <port>5432:5432</port>
+                                </ports>
+                                 <wait>
+                                    <tcp>
+                                        <ports>
+                                            <port>5432</port>
+                                        </ports>
+                                    </tcp>
+                                    <time>10000</time>
+                                </wait>
+                            </run>
+                        </image>
+                    </images>
+                </configuration>
+                <!--                <executions>
+
+                                    <execution>
+                                        <id>start</id>
+                                        <phase>test-compile</phase>
+                                        <goals>
+                                            <goal>start</goal>
+                                        </goals>
+                                    </execution>
+                                    <execution>
+                                        <id>stop</id>
+                                        <phase>test</phase>
+                                        <goals>
+                                            <goal>stop</goal>
+                                        </goals>
+                                    </execution>
+                                </executions>
+                -->
+            </plugin>
+        </plugins>
+    </build>
+</project>
