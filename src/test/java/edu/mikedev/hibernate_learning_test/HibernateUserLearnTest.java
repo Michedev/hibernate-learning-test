@@ -1,6 +1,5 @@
 package edu.mikedev.hibernate_learning_test;
 
-import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -13,63 +12,35 @@ import org.junit.Test;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 
 public class HibernateUserLearnTest {
 
-    Path testResourceDirectory;
-    File hibernateConfigFile;
-    Session session;
-    Transaction t;
+    private HibernateDBUtils hibernateDBUtils;
+    private Session session;
+    private Transaction t;
 
     @Before
     public void setUp() throws Exception {
-        this.testResourceDirectory = Paths.get("src","main","resources");
-        this.hibernateConfigFile = new File(testResourceDirectory.resolve("hibernate.cfg.xml").toAbsolutePath().toString());
+        Path testResourceDirectory = Paths.get("src", "main", "resources");
+        File hibernateConfigFile = new File(testResourceDirectory.resolve("hibernate.cfg.xml").toAbsolutePath().toString());
 
-        rebuildDB();
+        hibernateDBUtils.initDB();
 
         Configuration cfg = new Configuration();
-        SessionFactory factory = cfg.configure(this.hibernateConfigFile).buildSessionFactory();
+        SessionFactory factory = cfg.configure(hibernateConfigFile).buildSessionFactory();
 
         session = factory.openSession();
         t = session.beginTransaction();
+        this.hibernateDBUtils = new HibernateDBUtils(session);
     }
-
-    private void rebuildDB() throws SQLException {
-        String url = "jdbc:postgresql://localhost:5432/root";
-        Properties props = new Properties();
-        props.setProperty("user","root");
-        props.setProperty("password","root");
-
-        Connection conn = DriverManager.getConnection(url, props);
-        Statement statement = conn.createStatement();
-        statement.execute("DELETE FROM tasks;");
-        statement.execute("DELETE FROM users;");
-        statement.execute("COPY Users FROM '/db/fake-data/sample_user.csv' DELIMITER ',' CSV HEADER;");
-        statement.execute("COPY Tasks FROM '/db/fake-data/sample_task.csv' DELIMITER ',' CSV HEADER;");
-    }
-
-    private List<User> pullUsers(){
-        return session.createQuery("SELECT a FROM User a", User.class).getResultList();
-    }
-
-    private List<Task> pullTasks() {
-        return session.createQuery("SELECT a FROM Task a", Task.class).getResultList();
-    }
-
 
     @Test
     public void testPullUsers(){
-        List<User> users = pullUsers();
+        List<User> users = hibernateDBUtils.pullUsers();
 
         Assert.assertEquals(4, users.size());
         Assert.assertEquals("tizio", users.get(0).getUsername());
@@ -79,7 +50,7 @@ public class HibernateUserLearnTest {
 
     @Test
     public void testPulledUserTasks(){
-        List<User> users = pullUsers();
+        List<User> users = hibernateDBUtils.pullUsers();
 
         User firstUser = users.get(0);
         Assert.assertEquals(2, firstUser.getTasks().size());
@@ -93,13 +64,13 @@ public class HibernateUserLearnTest {
 
     @Test
     public void testDeleteUser(){
-        List<User> users = pullUsers();
+        List<User> users = hibernateDBUtils.pullUsers();
 
         User user = users.get(0);
         session.detach(user);
         session.delete(user);
 
-        List<User> usersAfterDelete = pullUsers();
+        List<User> usersAfterDelete = hibernateDBUtils.pullUsers();
 
         Assert.assertEquals(4, users.size());
         Assert.assertEquals(3, usersAfterDelete.size());
@@ -107,15 +78,15 @@ public class HibernateUserLearnTest {
 
     @Test
     public void testDeleteUserCascadeTasks(){
-        List<User> users = pullUsers();
-        List<Task> tasks = pullTasks();
+        List<User> users = hibernateDBUtils.pullUsers();
+        List<Task> tasks = hibernateDBUtils.pullTasks();
 
 
         User user = users.get(0);
         session.detach(user);
         session.delete(user);
 
-        List<Task> tasksAfterDelete = pullTasks();
+        List<Task> tasksAfterDelete = hibernateDBUtils.pullTasks();
         List<String> taskTitles = tasksAfterDelete.stream().map(Task::getTitle).collect(Collectors.toList());
 
         Assert.assertEquals(6, tasks.size());
@@ -131,14 +102,14 @@ public class HibernateUserLearnTest {
 
         session.persist(newUser);
 
-        List<User> usersAfterInsert = pullUsers();
+        List<User> usersAfterInsert = hibernateDBUtils.pullUsers();
         Assert.assertEquals(5, usersAfterInsert.size());
         Assert.assertEquals("newuser1", usersAfterInsert.get(4).getUsername());
     }
 
     @Test
     public void testUpdateUser(){
-        List<User> users = pullUsers();
+        List<User> users = hibernateDBUtils.pullUsers();
         User firstUser = users.get(0);
         session.detach(firstUser);
 
@@ -148,7 +119,7 @@ public class HibernateUserLearnTest {
 
         session.update(firstUser);
 
-        List<User> usersAfterUpdate = pullUsers();
+        List<User> usersAfterUpdate = hibernateDBUtils.pullUsers();
 
         User firstUserUpdated = usersAfterUpdate.get(usersAfterUpdate.size()-1);
 
@@ -162,4 +133,5 @@ public class HibernateUserLearnTest {
     public void commitTransaction(){
         t.commit();
     }
+
 }

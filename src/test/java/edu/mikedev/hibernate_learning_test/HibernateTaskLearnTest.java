@@ -1,79 +1,49 @@
 package edu.mikedev.hibernate_learning_test;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.query.Query;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Date;
+import java.util.List;
+
 public class HibernateTaskLearnTest {
 	
-	Path testResourceDirectory;
-	File hibernateConfigFile;
+	HibernateDBUtils hibernateDBUtils;
 	Session session;
 	Transaction t;
 
 	@Before
 	public void setUp() throws Exception {
-		this.testResourceDirectory = Paths.get("src","main","resources");
-		this.hibernateConfigFile = new File(testResourceDirectory.resolve("hibernate.cfg.xml").toAbsolutePath().toString());
-
-		rebuildDB();
+		Path testResourceDirectory = Paths.get("src","main","resources");
+		File hibernateConfigFile = new File(testResourceDirectory.resolve("hibernate.cfg.xml").toAbsolutePath().toString());
+		hibernateDBUtils.initDB();
 
 		Configuration cfg = new Configuration();
-		SessionFactory factory = cfg.configure(this.hibernateConfigFile).buildSessionFactory();
+		SessionFactory factory = cfg.configure(hibernateConfigFile).buildSessionFactory();
 
 		session = factory.openSession();
 		t = session.beginTransaction();
-	}
-
-	private void rebuildDB() throws SQLException {
-		String url = "jdbc:postgresql://localhost:5432/root";
-		Properties props = new Properties();
-		props.setProperty("user","root");
-		props.setProperty("password","root");
-
-		Connection conn = DriverManager.getConnection(url, props);
-		Statement statement = conn.createStatement();
-		statement.execute("DELETE FROM tasks;");
-		statement.execute("DELETE FROM users;");
-		statement.execute("COPY Users FROM '/db/fake-data/sample_user.csv' DELIMITER ',' CSV HEADER;");
-		statement.execute("COPY Tasks FROM '/db/fake-data/sample_task.csv' DELIMITER ',' CSV HEADER;");
+		hibernateDBUtils = new HibernateDBUtils(session);
 	}
 
 	@Test
 	public void testPullTaskAndTitlesFromDB() {
 
-		List<String> taskTitles = pullTaskTitles(session);
-		List<Task> tasks = pullTasks(session);
+		List<String> taskTitles = hibernateDBUtils.pullTaskTitles();
+		List<Task> tasks = hibernateDBUtils.pullTasks();
 		Assert.assertEquals(6, tasks.size());
 		Assert.assertEquals(6, taskTitles.size());
         t.commit();
 	}
-
-	private List<String> pullTaskTitles(Session session) {
-		return session.createQuery("select title from Task", String.class).getResultList();
-	}
-
-	private List<Task> pullTasks(Session session) {
-		return session.createQuery("SELECT a FROM Task a", Task.class).getResultList();
-	}
-
 
 
 	@Test
@@ -82,7 +52,7 @@ public class HibernateTaskLearnTest {
 		newTask.setId(7);
 		session.persist(newTask);
 
-		java.util.List<String> taskTitles = this.pullTaskTitles(session);
+		java.util.List<String> taskTitles = hibernateDBUtils.pullTaskTitles();
 		Assert.assertEquals(7, taskTitles.size());
 		Assert.assertTrue(taskTitles.contains("new generated task 123"));
 	}
@@ -91,24 +61,24 @@ public class HibernateTaskLearnTest {
 	public void testRemoveTaskByID(){
 		session.createQuery("delete from Task where id = 3").executeUpdate();
 		t.commit();
-		List<String> tasks = this.pullTaskTitles(session);
+		List<String> tasks = hibernateDBUtils.pullTaskTitles();
 		Assert.assertEquals(5, tasks.size());
 	}
 
 	@Test
 	public void testRemoveTaskThroughObject(){
-		List<Task> tasks = pullTasks(session);
+		List<Task> tasks = hibernateDBUtils.pullTasks();
 		Task firstTask = tasks.get(0);
 		session.remove(firstTask);
 
-		List<Task> tasksAfterRemove = pullTasks(session);
+		List<Task> tasksAfterRemove = hibernateDBUtils.pullTasks();
 		Assert.assertEquals(6, tasks.size());
 		Assert.assertEquals(5, tasksAfterRemove.size());
 	}
 
 	@Test
 	public void testUpdateTask(){
-		List<Task> tasks = pullTasks(session);
+		List<Task> tasks = hibernateDBUtils.pullTasks();
 		Task first = tasks.get(0);
 
 		String newTitle = "Updated title 1";
@@ -125,7 +95,7 @@ public class HibernateTaskLearnTest {
 		session.update(first);
 		t.commit();
 
-		List<Task> updatedTasks = pullTasks(session);
+		List<Task> updatedTasks = hibernateDBUtils.pullTasks();
 		Task firstUpdated = updatedTasks.get(updatedTasks.size()-1);
 
 		Assert.assertEquals(newTitle, firstUpdated.getTitle());
