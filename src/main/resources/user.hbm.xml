@@ -20,10 +20,10 @@
 			<column name="email" not-null="true"/>
 		</property>
 
-
-          <set name="tasks" inverse="true" cascade="all">
+          <set name="tasks" table="tasks" inverse="true" cascade="all">
             <key column="user_id" not-null="true" />
-            <one-to-many class="Task"/>
-        </set>
+            <one-to-many class="edu.mikedev.hibernate_learning_test.Task"/>
+          </set>
+
     </class>
 </hibernate-mapping>
