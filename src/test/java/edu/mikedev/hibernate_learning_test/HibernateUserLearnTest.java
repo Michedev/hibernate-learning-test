@@ -62,6 +62,10 @@ public class HibernateUserLearnTest {
         return session.createQuery("SELECT a FROM User a", User.class).getResultList();
     }
 
+    private List<Task> pullTasks() {
+        return session.createQuery("SELECT a FROM Task a", Task.class).getResultList();
+    }
+
 
     @Test
     public void testPullUsers(){
@@ -104,13 +108,23 @@ public class HibernateUserLearnTest {
     @Test
     public void testDeleteUserCascadeTasks(){
         List<User> users = pullUsers();
+        List<Task> tasks = pullTasks();
+
 
         User user = users.get(0);
         session.detach(user);
         session.delete(user);
 
+        List<Task> tasksAfterDelete = pullTasks();
+        List<String> taskTitles = tasksAfterDelete.stream().map(Task::getTitle).collect(Collectors.toList());
 
+        Assert.assertEquals(6, tasks.size());
+        Assert.assertEquals(4, tasksAfterDelete.size());
+        Assert.assertFalse(taskTitles.contains("Eat food"));
+        Assert.assertFalse(taskTitles.contains("Run a marathon"));
     }
+
+
 
     @After
     public void commitTransaction(){
