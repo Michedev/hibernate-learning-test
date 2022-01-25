@@ -124,6 +124,19 @@ public class HibernateUserLearnTest {
         Assert.assertFalse(taskTitles.contains("Run a marathon"));
     }
 
+    @Test
+    public void testInsertionOfNewUser(){
+        User newUser = new User("newuser1", "newpassword1", "newuser@pemail.com");
+        newUser.setId(4); //must set the id to make it works
+
+        session.persist(newUser);
+
+        List<User> usersAfterInsert = pullUsers();
+        Assert.assertEquals(5, usersAfterInsert.size());
+        Assert.assertEquals("newuser1", usersAfterInsert.get(4).getUsername());
+
+    }
+
 
 
     @After
