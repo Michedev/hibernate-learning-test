@@ -21,7 +21,7 @@
 		</property>
 
           <set name="tasks" table="tasks" inverse="true" cascade="all">
-            <key column="user_id" not-null="true" />
+            <key column="id_user" not-null="true" />
             <one-to-many class="edu.mikedev.hibernate_learning_test.Task"/>
           </set>
 

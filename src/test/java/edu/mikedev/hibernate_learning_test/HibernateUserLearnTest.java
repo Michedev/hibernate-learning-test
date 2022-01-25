@@ -78,11 +78,11 @@ public class HibernateUserLearnTest {
 
         User firstUser = users.get(0);
         Assert.assertEquals(2, firstUser.getTasks().size());
-        List<String> firstUserTaskTitles = firstUser.getTasks().stream().map(Task::getTitle).sorted().collect(Collectors.toList());
+        List<String> firstUserTaskTitles = firstUser.getTasks().stream().map(Task::getTitle).sorted().collect(Collectors.toList());  // Doing sorting because set has arbitrary order
         List<String> firstUserTaskDescriptions = firstUser.getTasks().stream().map(Task::getDescription).sorted().collect(Collectors.toList());
-        List<String> expectTaskTitles = Arrays.asList("Eat a food", "Run a marathon");
-        List<String> expectedTaskDescriptions = Arrays.asList("eat food for 15 days", "Run a full marathon for 42 kilometers");
-        Assert.assertEquals(expectTaskTitles, firstUserTaskTitles);
-        Assert.assertEquals(expectedTaskDescriptions, firstUserTaskDescriptions);
+        List<String> expectTaskTitles = Arrays.asList("Eat food", "Run a marathon");
+        List<String> expectedTaskDescriptions = Arrays.asList("Eat food for 15 days", "Run a full marathon for 42 kilometers");
+        Assert.assertArrayEquals(expectTaskTitles.toArray(), firstUserTaskTitles.toArray());
+        Assert.assertArrayEquals(expectedTaskDescriptions.toArray(), firstUserTaskDescriptions.toArray());
     }
 }
