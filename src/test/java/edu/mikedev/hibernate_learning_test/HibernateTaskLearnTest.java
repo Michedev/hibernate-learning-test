@@ -32,7 +32,6 @@ public class HibernateTaskLearnTest {
 	public void setUp() throws Exception {
 		this.testResourceDirectory = Paths.get("src","main","resources");
 		this.hibernateConfigFile = new File(testResourceDirectory.resolve("hibernate.cfg.xml").toAbsolutePath().toString());
-		System.out.print("Path: ");
 
 		rebuildDB();
 
@@ -62,7 +61,6 @@ public class HibernateTaskLearnTest {
 
 		List<String> taskTitles = pullTaskTitles(session);
 		List<Task> tasks = pullTasks(session);
-		System.out.println(taskTitles);
 		Assert.assertEquals(6, tasks.size());
 		Assert.assertEquals(6, taskTitles.size());
         t.commit();
