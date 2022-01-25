@@ -15,8 +15,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 
 public class HibernateUserLearnTest {
@@ -68,5 +70,19 @@ public class HibernateUserLearnTest {
         Assert.assertEquals("tizio", users.get(0).getUsername());
         Assert.assertEquals("pippo@pluto.com", users.get(1).getEmail());
 
+    }
+
+    @Test
+    public void testPulledUserTasks(){
+        List<User> users = pullUsers();
+
+        User firstUser = users.get(0);
+        Assert.assertEquals(2, firstUser.getTasks().size());
+        List<String> firstUserTaskTitles = firstUser.getTasks().stream().map(Task::getTitle).sorted().collect(Collectors.toList());
+        List<String> firstUserTaskDescriptions = firstUser.getTasks().stream().map(Task::getDescription).sorted().collect(Collectors.toList());
+        List<String> expectTaskTitles = Arrays.asList("Eat a food", "Run a marathon");
+        List<String> expectedTaskDescriptions = Arrays.asList("eat food for 15 days", "Run a full marathon for 42 kilometers");
+        Assert.assertEquals(expectTaskTitles, firstUserTaskTitles);
+        Assert.assertEquals(expectedTaskDescriptions, firstUserTaskDescriptions);
     }
 }
