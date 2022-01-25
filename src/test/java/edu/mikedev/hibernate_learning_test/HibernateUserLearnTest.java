@@ -4,6 +4,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,5 +85,35 @@ public class HibernateUserLearnTest {
         List<String> expectedTaskDescriptions = Arrays.asList("Eat food for 15 days", "Run a full marathon for 42 kilometers");
         Assert.assertArrayEquals(expectTaskTitles.toArray(), firstUserTaskTitles.toArray());
         Assert.assertArrayEquals(expectedTaskDescriptions.toArray(), firstUserTaskDescriptions.toArray());
+    }
+
+    @Test
+    public void testDeleteUser(){
+        List<User> users = pullUsers();
+
+        User user = users.get(0);
+        session.detach(user);
+        session.delete(user);
+
+        List<User> usersAfterDelete = pullUsers();
+
+        Assert.assertEquals(4, users.size());
+        Assert.assertEquals(3, usersAfterDelete.size());
+    }
+
+    @Test
+    public void testDeleteUserCascadeTasks(){
+        List<User> users = pullUsers();
+
+        User user = users.get(0);
+        session.detach(user);
+        session.delete(user);
+
+
+    }
+
+    @After
+    public void commitTransaction(){
+        t.commit();
     }
 }
