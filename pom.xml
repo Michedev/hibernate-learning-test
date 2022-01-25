@@ -46,11 +46,12 @@
                     <images>
                     	<image>
                             <name>postgres:14.1-alpine</name>
-                            <alias>postgres</alias>
+                            <alias>postgres-learning-test-hibernate</alias>
                             <build>
                        			<dockerFile>${project.basedir}/Postgresql_Dockerfile</dockerFile>     
                             </build>
                             <run>
+                                <containerNamePattern>postgres-learning-test-hibernate</containerNamePattern>
                                 <autoRemove>true</autoRemove>
                                 <network>
                                     <name>my-network</name>
@@ -75,24 +76,6 @@
                         </image>
                     </images>
                 </configuration>
-                <!--                <executions>
-
-                                    <execution>
-                                        <id>start</id>
-                                        <phase>test-compile</phase>
-                                        <goals>
-                                            <goal>start</goal>
-                                        </goals>
-                                    </execution>
-                                    <execution>
-                                        <id>stop</id>
-                                        <phase>test</phase>
-                                        <goals>
-                                            <goal>stop</goal>
-                                        </goals>
-                                    </execution>
-                                </executions>
-                -->
             </plugin>
         </plugins>
     </build>
