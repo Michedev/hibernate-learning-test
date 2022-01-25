@@ -67,8 +67,7 @@ public class HibernateTaskLearnTest {
 	}
 
 	private List<String> pullTaskTitles(Session session) {
-		Query<String> query = session.createQuery("select title from Task");
-		return query.list();
+		return session.createQuery("select title from Task", String.class).getResultList();
 	}
 
 	private List<Task> pullTasks(Session session) {
