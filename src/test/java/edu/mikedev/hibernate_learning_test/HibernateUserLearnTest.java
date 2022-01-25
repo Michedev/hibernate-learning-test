@@ -1,5 +1,6 @@
 package edu.mikedev.hibernate_learning_test;
 
+import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -33,7 +34,6 @@ public class HibernateUserLearnTest {
     public void setUp() throws Exception {
         this.testResourceDirectory = Paths.get("src","main","resources");
         this.hibernateConfigFile = new File(testResourceDirectory.resolve("hibernate.cfg.xml").toAbsolutePath().toString());
-        System.out.print("Path: ");
 
         rebuildDB();
 
@@ -134,7 +134,26 @@ public class HibernateUserLearnTest {
         List<User> usersAfterInsert = pullUsers();
         Assert.assertEquals(5, usersAfterInsert.size());
         Assert.assertEquals("newuser1", usersAfterInsert.get(4).getUsername());
+    }
 
+    @Test
+    public void testUpdateUser(){
+        List<User> users = pullUsers();
+        User firstUser = users.get(0);
+        session.detach(firstUser);
+
+        Assert.assertNotEquals("UsernameUpdated1", firstUser.getUsername());
+
+        firstUser.setUsername("UsernameUpdated1");
+
+        session.update(firstUser);
+
+        List<User> usersAfterUpdate = pullUsers();
+
+        User firstUserUpdated = usersAfterUpdate.get(usersAfterUpdate.size()-1);
+
+        Assert.assertEquals(firstUser.getId(), firstUserUpdated.getId());
+        Assert.assertEquals("UsernameUpdated1", firstUserUpdated.getUsername());
     }
 
 
