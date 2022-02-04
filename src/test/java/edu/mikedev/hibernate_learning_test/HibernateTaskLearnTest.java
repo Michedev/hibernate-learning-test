@@ -25,7 +25,6 @@ public class HibernateTaskLearnTest {
 	public void setUp() throws Exception {
 		Path testResourceDirectory = Paths.get("src","main","resources");
 		File hibernateConfigFile = new File(testResourceDirectory.resolve("hibernate.cfg.xml").toAbsolutePath().toString());
-		hibernateDBUtils.initDB();
 
 		Configuration cfg = new Configuration();
 		SessionFactory factory = cfg.configure(hibernateConfigFile).buildSessionFactory();
@@ -33,6 +32,7 @@ public class HibernateTaskLearnTest {
 		session = factory.openSession();
 		t = session.beginTransaction();
 		hibernateDBUtils = new HibernateDBUtils(session);
+		hibernateDBUtils.initDB();
 	}
 
 	@Test
@@ -43,6 +43,12 @@ public class HibernateTaskLearnTest {
 		Assert.assertEquals(6, tasks.size());
 		Assert.assertEquals(6, taskTitles.size());
         t.commit();
+	}
+	
+	@Test
+	public void testPullNotExistentTask() {
+		List<Task> resultQuery = session.createQuery("SELECT a FROM Task a where a.id = 1000", Task.class).getResultList();
+		Assert.assertEquals(0, resultQuery.size());
 	}
 
 

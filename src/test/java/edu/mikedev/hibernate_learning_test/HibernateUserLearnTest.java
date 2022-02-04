@@ -28,7 +28,6 @@ public class HibernateUserLearnTest {
         Path testResourceDirectory = Paths.get("src", "main", "resources");
         File hibernateConfigFile = new File(testResourceDirectory.resolve("hibernate.cfg.xml").toAbsolutePath().toString());
 
-        hibernateDBUtils.initDB();
 
         Configuration cfg = new Configuration();
         SessionFactory factory = cfg.configure(hibernateConfigFile).buildSessionFactory();
@@ -36,6 +35,7 @@ public class HibernateUserLearnTest {
         session = factory.openSession();
         t = session.beginTransaction();
         this.hibernateDBUtils = new HibernateDBUtils(session);
+        hibernateDBUtils.initDB();
     }
 
     @Test
