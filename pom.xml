@@ -17,12 +17,12 @@
 	 </properties>
 
   <dependencies>
-    <dependency>
-		      <groupId>junit</groupId>
-		      <artifactId>junit</artifactId>
-		      <version>4.13.2</version>
-		      <scope>test</scope>
-    </dependency>
+      <dependency>
+          <groupId>org.junit.vintage</groupId>
+          <artifactId>junit-vintage-engine</artifactId>
+          <version>5.8.2</version>
+          <scope>test</scope>
+      </dependency>
     <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
@@ -51,12 +51,6 @@
                        			<dockerFile>${project.basedir}/Postgresql_Dockerfile</dockerFile>     
                             </build>
                             <run>
-                                <containerNamePattern>postgres-learning-test-hibernate</containerNamePattern>
-                                <autoRemove>true</autoRemove>
-                                <network>
-                                    <name>my-network</name>
-                                    <mode>custom</mode>
-                                </network>
                                 <env>
                                     <POSTGRES_USER>root</POSTGRES_USER>
                                     <POSTGRES_PASSWORD>root</POSTGRES_PASSWORD>
@@ -64,19 +58,72 @@
                                 <ports>
                                     <port>5432:5432</port>
                                 </ports>
-                                 <wait>
+                                <wait>
                                     <tcp>
                                         <ports>
                                             <port>5432</port>
                                         </ports>
                                     </tcp>
-                                    <time>10000</time>
+                                    <time>20000</time>
                                 </wait>
                             </run>
                         </image>
                     </images>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>docker-build</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>docker-start</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>docker-stop</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                            <goal>remove</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>failsafe-integration-test</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 </project>
