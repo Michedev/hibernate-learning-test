@@ -37,7 +37,6 @@ public class HibernateTaskLearnTest {
 
 	@Test
 	public void testPullTaskAndTitlesFromDB() {
-
 		List<String> taskTitles = hibernateDBUtils.pullTaskTitles();
 		List<Task> tasks = hibernateDBUtils.pullTasks();
 		Assert.assertEquals(6, tasks.size());

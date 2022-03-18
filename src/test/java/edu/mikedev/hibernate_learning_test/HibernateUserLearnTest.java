@@ -45,7 +45,6 @@ public class HibernateUserLearnTest {
         Assert.assertEquals(4, users.size());
         Assert.assertEquals("tizio", users.get(0).getUsername());
         Assert.assertEquals("pippo@pluto.com", users.get(1).getEmail());
-
     }
 
     @Test
