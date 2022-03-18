@@ -12,9 +12,10 @@ The project tests rely upon an external PostgreSQL container to execute them.
 
 ## Test suite
 
-The project skips the _test_ phase in favor of the _integration test_ phase because tests
-we want to start PostgreSQL before testing (_pre-integration-test_) and stopping 
-them afterwards (_post-integration-test_).
+The project skips the _test_ phase in favor of the _integration test_ phase because
+we want to start PostgreSQL before testing (_pre-integration-test_ phase) and stopping 
+them afterwards (_post-integration-test_ phase). Moreover, tests run with _failsafe_ plugin
+instead of _surefire_ plugin.
 
 ## How to run
 
