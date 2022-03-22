@@ -12,6 +12,10 @@ import org.junit.Test;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -53,19 +57,28 @@ public class HibernateTaskLearnTest {
 
 	@Test
 	public void testInsertNewTaskInDB(){
-		Task newTask = new Task("new generated task 123", "description 1", new Date(88844328L), false);
-		newTask.setId(7);
-		session.persist(newTask);
+		String newTaskTitle = "new generated task 123";
+		String newTaskDescription = "description 1";
+		Task newTask = new Task(newTaskTitle, newTaskDescription, new Date(88844328L), false);
 
-		java.util.List<String> taskTitles = hibernateDBUtils.pullTaskTitles();
-		Assert.assertEquals(7, taskTitles.size());
-		Assert.assertTrue(taskTitles.contains("new generated task 123"));
+		session.save(newTask);
+
+		List<Task> pulledTasks = hibernateDBUtils.pullTasks();
+		Assert.assertEquals(7, pulledTasks.size());
+
+		Task newPulledTask = pulledTasks.get(6);
+
+		Assert.assertEquals(6, newPulledTask.getId());
+		Assert.assertEquals(newTaskTitle, newPulledTask.getTitle());
+		Assert.assertEquals(newTaskDescription, newPulledTask.getDescription());
+
+
 	}
 
 	@Test
 	public void testRemoveTaskByID(){
 		session.createQuery("delete from Task where id = 3").executeUpdate();
-		t.commit();
+
 		List<String> tasks = hibernateDBUtils.pullTaskTitles();
 		Assert.assertEquals(5, tasks.size());
 	}
@@ -92,13 +105,8 @@ public class HibernateTaskLearnTest {
 		Assert.assertNotEquals(newTitle, first.getTitle());
 		Assert.assertNotEquals(newDescription, first.getDescription());
 
-		session.evict(first);
-
 		first.setTitle(newTitle);
 		first.setDescription(newDescription);
-
-		session.update(first);
-		t.commit();
 
 		List<Task> updatedTasks = hibernateDBUtils.pullTasks();
 		Task firstUpdated = updatedTasks.get(updatedTasks.size()-1);

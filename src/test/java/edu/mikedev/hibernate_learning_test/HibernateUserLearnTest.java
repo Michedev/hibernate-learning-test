@@ -12,6 +12,8 @@ import org.junit.Test;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,7 +23,7 @@ public class HibernateUserLearnTest {
 
     private HibernateDBUtils hibernateDBUtils;
     private Session session;
-    private Transaction t;
+    private SessionFactory sessionFactory;
 
     @Before
     public void setUp() throws Exception {
@@ -30,10 +32,10 @@ public class HibernateUserLearnTest {
 
 
         Configuration cfg = new Configuration();
-        SessionFactory factory = cfg.configure(hibernateConfigFile).buildSessionFactory();
+        sessionFactory = cfg.configure(hibernateConfigFile).buildSessionFactory();
 
-        session = factory.openSession();
-        t = session.beginTransaction();
+        session = sessionFactory.openSession();
+        session.beginTransaction();
         this.hibernateDBUtils = new HibernateDBUtils(session);
         hibernateDBUtils.initDB();
     }
@@ -66,13 +68,14 @@ public class HibernateUserLearnTest {
         List<User> users = hibernateDBUtils.pullUsers();
 
         User user = users.get(0);
-        session.detach(user);
+        int deletedUserId = user.getId();
         session.delete(user);
 
         List<User> usersAfterDelete = hibernateDBUtils.pullUsers();
 
         Assert.assertEquals(4, users.size());
         Assert.assertEquals(3, usersAfterDelete.size());
+        Assert.assertFalse(usersAfterDelete.stream().map(User::getId).anyMatch(x -> x == deletedUserId));
     }
 
     @Test
@@ -82,7 +85,6 @@ public class HibernateUserLearnTest {
 
 
         User user = users.get(0);
-        session.detach(user);
         session.delete(user);
 
         List<Task> tasksAfterDelete = hibernateDBUtils.pullTasks();
@@ -97,9 +99,8 @@ public class HibernateUserLearnTest {
     @Test
     public void testInsertionOfNewUser(){
         User newUser = new User("newuser1", "newpassword1", "newuser@pemail.com");
-        newUser.setId(4); //must set the id to make it works
 
-        session.persist(newUser);
+        session.save(newUser);
 
         List<User> usersAfterInsert = hibernateDBUtils.pullUsers();
         Assert.assertEquals(5, usersAfterInsert.size());
@@ -108,29 +109,28 @@ public class HibernateUserLearnTest {
 
     @Test
     public void testUpdateUser(){
+        String newUsername = "UsernameUpdated1";
+
         List<User> users = hibernateDBUtils.pullUsers();
         User firstUser = users.get(0);
-        session.detach(firstUser);
 
-        Assert.assertNotEquals("UsernameUpdated1", firstUser.getUsername());
+        Assert.assertNotEquals(newUsername, firstUser.getUsername());
 
-        firstUser.setUsername("UsernameUpdated1");
-
-        session.update(firstUser);
+        firstUser.setUsername(newUsername);
 
         List<User> usersAfterUpdate = hibernateDBUtils.pullUsers();
 
         User firstUserUpdated = usersAfterUpdate.get(usersAfterUpdate.size()-1);
 
         Assert.assertEquals(firstUser.getId(), firstUserUpdated.getId());
-        Assert.assertEquals("UsernameUpdated1", firstUserUpdated.getUsername());
+        Assert.assertEquals(newUsername, firstUserUpdated.getUsername());
     }
 
 
 
     @After
     public void commitTransaction(){
-        t.commit();
+        session.getTransaction().commit();
     }
 
 }
