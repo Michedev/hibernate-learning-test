@@ -5,11 +5,13 @@
         <!-- Attribute id is mapped to the column student_id -->
         <id name="id" type="integer">
             <column name="id" />
+            <generator class="increment" />
         </id>
 
         <!-- Attribute name is mapped to the column student_name -->
         <property name="title" type="string">
             <column name="title" not-null="true" />
+
         </property>
 
 		<property name="description" type="string">

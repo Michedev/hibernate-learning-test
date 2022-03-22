@@ -5,6 +5,7 @@
         <!-- Attribute id is mapped to the column student_id -->
         <id name="id" type="integer">
             <column name="id" />
+            <generator class="increment" />
         </id>
 
         <!-- Attribute name is mapped to the column student_name -->
