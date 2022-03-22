@@ -101,7 +101,6 @@ public class HibernateTaskLearnTest {
 		List<String> dbTaskTitlesPostCommit = hibernateDBUtils.getDBTaskTitles();
 		Assert.assertEquals(5, dbTaskTitlesPostCommit.size());
 		Assert.assertFalse(dbTaskTitlesPostCommit.contains(titleTaskRemoved));
-
 	}
 
 	@Test
