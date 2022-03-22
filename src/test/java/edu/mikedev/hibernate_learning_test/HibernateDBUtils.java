@@ -2,10 +2,8 @@ package edu.mikedev.hibernate_learning_test;
 
 import org.hibernate.Session;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,6 +31,27 @@ public class HibernateDBUtils {
         props.setProperty("password", "root");
 
         return DriverManager.getConnection(url, props);
+    }
+
+    public List<String> getDBTaskTitles(){
+        List<String> taskTitles = new ArrayList<>();
+        Connection connection = null;
+        try {
+            connection = initDBConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        ResultSet titlesDBIterator = null;
+        try {
+            titlesDBIterator = connection.createStatement().executeQuery("Select * from Tasks");
+            while(titlesDBIterator.next()){
+                String title = titlesDBIterator.getString("title");
+                taskTitles.add(title);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return taskTitles;
     }
 
     public List<User> pullUsers() {

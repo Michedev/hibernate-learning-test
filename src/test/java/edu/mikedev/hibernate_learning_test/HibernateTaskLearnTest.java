@@ -2,7 +2,6 @@ package edu.mikedev.hibernate_learning_test;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.junit.After;
 import org.junit.Assert;
@@ -12,10 +11,6 @@ import org.junit.Test;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -23,7 +18,7 @@ public class HibernateTaskLearnTest {
 	
 	HibernateDBUtils hibernateDBUtils;
 	Session session;
-	Transaction t;
+	private SessionFactory sessionFactory;
 
 	@Before
 	public void setUp() throws Exception {
@@ -31,10 +26,10 @@ public class HibernateTaskLearnTest {
 		File hibernateConfigFile = new File(testResourceDirectory.resolve("hibernate.cfg.xml").toAbsolutePath().toString());
 
 		Configuration cfg = new Configuration();
-		SessionFactory factory = cfg.configure(hibernateConfigFile).buildSessionFactory();
+		sessionFactory = cfg.configure(hibernateConfigFile).buildSessionFactory();
 
-		session = factory.openSession();
-		t = session.beginTransaction();
+		session = sessionFactory.openSession();
+		session.beginTransaction();
 		hibernateDBUtils = new HibernateDBUtils(session);
 		hibernateDBUtils.initDB();
 	}
@@ -45,7 +40,6 @@ public class HibernateTaskLearnTest {
 		List<Task> tasks = hibernateDBUtils.pullTasks();
 		Assert.assertEquals(6, tasks.size());
 		Assert.assertEquals(6, taskTitles.size());
-        t.commit();
 	}
 	
 	@Test
@@ -72,27 +66,21 @@ public class HibernateTaskLearnTest {
 		Assert.assertEquals(newTaskTitle, newPulledTask.getTitle());
 		Assert.assertEquals(newTaskDescription, newPulledTask.getDescription());
 
+		Assert.assertEquals(6, hibernateDBUtils.getDBTaskTitles().size());
 
-		List<String> dbTitles = new ArrayList<>();
-		Connection connection = null;
-		try {
-			connection = hibernateDBUtils.initDBConnection();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		ResultSet titlesDBIterator = null;
-		try {
-			titlesDBIterator = connection.createStatement().executeQuery("Select * from Tasks");
-			while(titlesDBIterator.next()){
-				String title = titlesDBIterator.getString("title");
-				dbTitles.add(title);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		commitAndReinitSession();
 
-		Assert.assertEquals(7, dbTitles.size());
+		List<String> dbTaskTitlesAfterReInit = hibernateDBUtils.getDBTaskTitles();
 
+		Assert.assertEquals(7, dbTaskTitlesAfterReInit.size());
+
+	}
+
+	private void commitAndReinitSession() {
+		session.getTransaction().commit();
+		session = sessionFactory.openSession();
+		session.beginTransaction();
+		hibernateDBUtils.setSession(session);
 	}
 
 	@Test
@@ -101,6 +89,8 @@ public class HibernateTaskLearnTest {
 
 		List<String> tasks = hibernateDBUtils.pullTaskTitles();
 		Assert.assertEquals(5, tasks.size());
+
+
 	}
 
 	@Test
@@ -112,6 +102,12 @@ public class HibernateTaskLearnTest {
 		List<Task> tasksAfterRemove = hibernateDBUtils.pullTasks();
 		Assert.assertEquals(6, tasks.size());
 		Assert.assertEquals(5, tasksAfterRemove.size());
+
+		Assert.assertEquals(6, hibernateDBUtils.getDBTaskTitles().size());
+
+		commitAndReinitSession();
+
+		Assert.assertEquals(5, hibernateDBUtils.getDBTaskTitles().size());
 	}
 
 	@Test
@@ -119,10 +115,11 @@ public class HibernateTaskLearnTest {
 		List<Task> tasks = hibernateDBUtils.pullTasks();
 		Task first = tasks.get(0);
 
+		String oldTitle = first.getTitle();
 		String newTitle = "Updated title 1";
 		String newDescription = "Updated description 1";
 
-		Assert.assertNotEquals(newTitle, first.getTitle());
+		Assert.assertNotEquals(newTitle, oldTitle);
 		Assert.assertNotEquals(newDescription, first.getDescription());
 
 		first.setTitle(newTitle);
@@ -134,6 +131,17 @@ public class HibernateTaskLearnTest {
 		Assert.assertEquals(newTitle, firstUpdated.getTitle());
 		Assert.assertEquals(newDescription, firstUpdated.getDescription());
 		Assert.assertEquals(0, firstUpdated.getId());
+
+
+		List<String> dbTaskTitles = hibernateDBUtils.getDBTaskTitles();
+		Assert.assertTrue(dbTaskTitles.contains(oldTitle));
+		Assert.assertFalse(dbTaskTitles.contains(newTitle));
+
+		commitAndReinitSession();
+
+		List<String> dbTaskTitlesAfterCommit = hibernateDBUtils.getDBTaskTitles();
+		Assert.assertTrue(dbTaskTitlesAfterCommit.contains(newTitle));
+		Assert.assertFalse(dbTaskTitlesAfterCommit.contains(oldTitle));
 	}
 
 	@After
