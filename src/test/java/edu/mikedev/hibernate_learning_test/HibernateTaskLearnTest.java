@@ -85,11 +85,22 @@ public class HibernateTaskLearnTest {
 
 	@Test
 	public void testRemoveTaskByID(){
+		String titleTaskRemoved = "Sample task title 2";
 		session.createQuery("delete from Task where id = 3").executeUpdate();
 
-		List<String> tasks = hibernateDBUtils.pullTaskTitles();
-		Assert.assertEquals(5, tasks.size());
+		List<String> taskTitles = hibernateDBUtils.pullTaskTitles();
+		Assert.assertEquals(5, taskTitles.size());
+		Assert.assertFalse(taskTitles.contains(titleTaskRemoved));
 
+		List<String> dbTaskTitlesPreCommit = hibernateDBUtils.getDBTaskTitles();
+		Assert.assertEquals(6, dbTaskTitlesPreCommit.size());
+		Assert.assertTrue(dbTaskTitlesPreCommit.contains(titleTaskRemoved));
+
+		commitAndReinitSession();
+
+		List<String> dbTaskTitlesPostCommit = hibernateDBUtils.getDBTaskTitles();
+		Assert.assertEquals(5, dbTaskTitlesPostCommit.size());
+		Assert.assertFalse(dbTaskTitlesPostCommit.contains(titleTaskRemoved));
 
 	}
 

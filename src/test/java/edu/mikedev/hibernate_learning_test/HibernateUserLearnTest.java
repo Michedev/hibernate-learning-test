@@ -76,7 +76,21 @@ public class HibernateUserLearnTest {
         Assert.assertEquals(4, users.size());
         Assert.assertEquals(3, usersAfterDelete.size());
         Assert.assertFalse(usersAfterDelete.stream().map(User::getId).anyMatch(x -> x == deletedUserId));
+
+        Assert.assertEquals(4, hibernateDBUtils.getDBUsernames().size());
+
+        commitAndReinitSession();
+
+        Assert.assertEquals(3, hibernateDBUtils.getDBUsernames().size());
     }
+
+    private void commitAndReinitSession() {
+        session.getTransaction().commit();
+        session = sessionFactory.openSession();
+        session.beginTransaction();
+        hibernateDBUtils.setSession(session);
+    }
+
 
     @Test
     public void testDeleteUserCascadeTasks(){
@@ -94,17 +108,37 @@ public class HibernateUserLearnTest {
         Assert.assertEquals(4, tasksAfterDelete.size());
         Assert.assertFalse(taskTitles.contains("Eat food"));
         Assert.assertFalse(taskTitles.contains("Run a marathon"));
+
+        Assert.assertEquals(4, hibernateDBUtils.getDBUsernames().size());
+        Assert.assertEquals(6, hibernateDBUtils.getDBTaskTitles().size());
+
+        commitAndReinitSession();
+
+        Assert.assertEquals(3, hibernateDBUtils.getDBUsernames().size());
+        Assert.assertEquals(4, hibernateDBUtils.getDBTaskTitles().size());
+
     }
 
     @Test
     public void testInsertionOfNewUser(){
-        User newUser = new User("newuser1", "newpassword1", "newuser@pemail.com");
+        String newUsername = "newuser1";
+        User newUser = new User(newUsername, "newpassword1", "newuser@pemail.com");
 
         session.save(newUser);
 
         List<User> usersAfterInsert = hibernateDBUtils.pullUsers();
         Assert.assertEquals(5, usersAfterInsert.size());
-        Assert.assertEquals("newuser1", usersAfterInsert.get(4).getUsername());
+        Assert.assertEquals(newUsername, usersAfterInsert.get(4).getUsername());
+
+        List<String> dbUsernamesPreCommit = hibernateDBUtils.getDBUsernames();
+        Assert.assertEquals(4, dbUsernamesPreCommit.size());
+        Assert.assertFalse(dbUsernamesPreCommit.contains(newUsername));
+
+        commitAndReinitSession();
+
+        List<String> dbUsernamesPostCommit = hibernateDBUtils.getDBUsernames();
+        Assert.assertEquals(5, dbUsernamesPostCommit.size());
+        Assert.assertTrue(dbUsernamesPostCommit.contains(newUsername));
     }
 
     @Test
@@ -113,6 +147,8 @@ public class HibernateUserLearnTest {
 
         List<User> users = hibernateDBUtils.pullUsers();
         User firstUser = users.get(0);
+
+        String oldUsername = firstUser.getUsername();
 
         Assert.assertNotEquals(newUsername, firstUser.getUsername());
 
@@ -124,6 +160,17 @@ public class HibernateUserLearnTest {
 
         Assert.assertEquals(firstUser.getId(), firstUserUpdated.getId());
         Assert.assertEquals(newUsername, firstUserUpdated.getUsername());
+
+        List<String> dbUsernamesPreCommit = hibernateDBUtils.getDBUsernames();
+        Assert.assertTrue(dbUsernamesPreCommit.contains(oldUsername));
+        Assert.assertFalse(dbUsernamesPreCommit.contains(newUsername));
+
+        commitAndReinitSession();
+
+        List<String> dbUsernamesPostCommit = hibernateDBUtils.getDBUsernames();
+
+        Assert.assertTrue(dbUsernamesPostCommit.contains(newUsername));
+        Assert.assertFalse(dbUsernamesPostCommit.contains(oldUsername));
     }
 
 

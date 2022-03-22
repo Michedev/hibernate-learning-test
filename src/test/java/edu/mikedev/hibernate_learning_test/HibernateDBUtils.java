@@ -34,6 +34,14 @@ public class HibernateDBUtils {
     }
 
     public List<String> getDBTaskTitles(){
+        return pullListStringFromDB("Tasks", "title");
+    }
+
+    public List<String> getDBUsernames(){
+        return pullListStringFromDB("Users", "username");
+    }
+
+    private List<String> pullListStringFromDB(String tableName, String fieldName) {
         List<String> taskTitles = new ArrayList<>();
         Connection connection = null;
         try {
@@ -43,9 +51,9 @@ public class HibernateDBUtils {
         }
         ResultSet titlesDBIterator = null;
         try {
-            titlesDBIterator = connection.createStatement().executeQuery("Select * from Tasks");
+            titlesDBIterator = connection.createStatement().executeQuery("Select * from " + tableName);
             while(titlesDBIterator.next()){
-                String title = titlesDBIterator.getString("title");
+                String title = titlesDBIterator.getString(fieldName);
                 taskTitles.add(title);
             }
         } catch (SQLException e) {
