@@ -73,6 +73,26 @@ public class HibernateTaskLearnTest {
 		Assert.assertEquals(newTaskDescription, newPulledTask.getDescription());
 
 
+		List<String> dbTitles = new ArrayList<>();
+		Connection connection = null;
+		try {
+			connection = hibernateDBUtils.initDBConnection();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		ResultSet titlesDBIterator = null;
+		try {
+			titlesDBIterator = connection.createStatement().executeQuery("Select * from Tasks");
+			while(titlesDBIterator.next()){
+				String title = titlesDBIterator.getString("title");
+				dbTitles.add(title);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		Assert.assertEquals(7, dbTitles.size());
+
 	}
 
 	@Test
